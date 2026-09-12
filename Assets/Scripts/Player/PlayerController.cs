@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform visualRoot;
 
     [SerializeField] private Collider2D playerCollider;
-    private Rigidbody2D rigidbody;
+    private Rigidbody2D rb;
     public Vector2 MoveInput { get; private set; }
     private PlayerStateMachine stateMachine;
     public bool IsDead { get; private set; }
@@ -34,7 +34,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        rigidbody = GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody2D>();
 
         if (animator == null)
         {
@@ -174,13 +174,13 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        rigidbody.linearVelocity = MoveInput * moveSpeed;
+        rb.linearVelocity = MoveInput * moveSpeed;
     }
     public void StopMovement()
     {
-        if(rigidbody != null)
+        if(rb != null)
         {
-            rigidbody.linearVelocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
         }
     }
     public void UpdateFacingDirection()
