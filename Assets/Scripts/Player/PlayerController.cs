@@ -63,7 +63,7 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector2 animationDirection =
-            GetCardinalDirection(MoveInput);
+            GetEightWayDirection(MoveInput);
 
         animator.SetFloat(
             MoveXHash,
@@ -87,20 +87,18 @@ public class PlayerController : MonoBehaviour
             lastMoveDirection.y
         );
     }
-    private static Vector2 GetCardinalDirection(
-    Vector2 input)
+    private static Vector2 GetEightWayDirection(Vector2 input)
     {
-        if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
-        {
-            return new Vector2(
-                Mathf.Sign(input.x),
-                0f
-            );
-        }
+        if (input.sqrMagnitude <= 0.01f)
+            return Vector2.zero;
+
+        float angle = Mathf.Atan2(input.y, input.x);
+        float step = Mathf.PI / 4f;
+        float snappedAngle = Mathf.Round(angle / step) * step;
 
         return new Vector2(
-            0f,
-            Mathf.Sign(input.y)
+            Mathf.Round(Mathf.Cos(snappedAngle)),
+            Mathf.Round(Mathf.Sin(snappedAngle))
         );
     }
     private void Start()
@@ -192,23 +190,23 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector2 direction =
-            GetCardinalDirection(MoveInput);
+            GetEightWayDirection(MoveInput);
 
         Vector3 scale = visualRoot.localScale;
 
         if (direction.x < 0f)
         {
-            // Sprite gốc là West.
+            
             scale.x = Mathf.Abs(scale.x);
         }
         else if (direction.x > 0f)
         {
-            // East dùng sprite West lật ngang.
+           
             scale.x = -Mathf.Abs(scale.x);
         }
         else
         {
-            // North/South không lật.
+            
             scale.x = Mathf.Abs(scale.x);
         }
 
