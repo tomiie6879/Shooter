@@ -10,6 +10,9 @@
 -   🔄 IN PROGRESS
 -   ⛔ BLOCKED
 
+Các mục [x] dưới đây ghi nhận phần đã triển khai trong code/scene, chưa
+xác nhận bằng Play Mode hoặc kiểm thử trên thiết bị mobile.
+
 ## Mục tiêu hiện tại
 
 Ưu tiên tạo Vertical Slice:
@@ -23,8 +26,8 @@ Không tăng số lượng content trước khi core loop đủ vui.
 
 ## PHASE 0 --- Project Setup
 
--   [ ] Tạo Unity 6 project 2D.
--   [ ] Thiết lập Git + Unity `.gitignore`.
+-   [x] Tạo Unity 6 project 2D.
+-   [x] Thiết lập Git + Unity `.gitignore`.
 -   [ ] Landscape + Android/iOS target.
 -   [ ] Tạo folder structure.
 -   [ ] Tạo scene Boot, MainMenu, Game, Result.
@@ -35,42 +38,53 @@ Không tăng số lượng content trước khi core loop đủ vui.
 
 ## PHASE 1 --- Camera & Arena
 
--   [ ] Orthographic Main Camera.
+-   [x] Orthographic Main Camera.
 -   [ ] Camera cố định.
 -   [ ] Camera không làm child Player.
 -   [ ] Arena landscape.
--   [ ] Ground/background.
+-   [x] Ground/background.
 -   [ ] Arena Boundary.
 -   [ ] Canvas Screen Space - Overlay.
 -   [ ] Test nhiều aspect ratio mobile.
 
 **Milestone:** Arena hiển thị đúng trên mobile.
 
+**Hiện có:** Scene `Battle_01` với nền Tilemap và `CameraFollow` bám Player
+bằng `SmoothDamp`. Camera cố định theo thiết kế vẫn chưa triển khai.
+
 ## PHASE 2 --- Player Movement
 
 -   [ ] Player prefab.
--   [ ] Rigidbody2D + Collider2D.
--   [ ] PlayerController.
--   [ ] Keyboard input cho Editor.
+-   [x] Rigidbody2D + Collider2D.
+-   [x] PlayerController.
+-   [x] Keyboard input cho Editor.
 -   [ ] Virtual Joystick.
--   [ ] Normalize movement.
--   [ ] Move Speed.
+-   [x] Normalize movement.
+-   [x] Move Speed.
 -   [ ] Arena boundary.
--   [ ] Idle/Move animation.
+-   [x] Idle/Move animation.
 
 **Milestone:** Player di chuyển mượt.
 
+**Hiện có:** State machine `Idle/Run/Die`, animation theo 8 hướng và input
+bàn phím qua `Input.GetAxisRaw`. Player đang nằm trong scene, chưa có prefab riêng.
+
 ## PHASE 3 --- Health & Damage
 
--   [ ] IDamageable.
--   [ ] PlayerHealth.
--   [ ] EnemyHealth.
+-   [x] IDamageable.
+-   [x] PlayerHealth.
+-   [x] EnemyHealth.
 -   [ ] DamageSystem.
--   [ ] Max HP.
+-   [x] Max HP.
 -   [ ] Hit feedback.
--   [ ] Death.
+-   [x] Death.
 -   [ ] Player i-frame.
--   [ ] HP UI.
+-   [x] HP UI.
+
+**Hiện có:** `IHealth`, nhận sát thương, hồi máu cho Player và cập nhật thanh
+HP qua event `HealthChanged`. Khi chết, Player dừng di chuyển, tắt collider
+và gửi trigger animation; Enemy bị vô hiệu hóa. Animation chết cần kiểm tra
+trong Play Mode; chưa có luồng Game Over.
 
 ## PHASE 4 --- Enemy Foundation
 
@@ -284,6 +298,9 @@ Chỉ làm sau khi Weapon + Shop + Merge đã vui.
 
 ## PHASE 18 --- UI/UX
 
+**Hiện có một phần:** Scene có thanh HP đã nối với `PlayerHealth`, cùng
+giao diện wave/gold. Chưa có logic wave/currency để hoàn thiện HUD.
+
 -   [ ] Main Menu.
 -   [ ] HUD.
 -   [ ] HP / XP / Wave / Timer / Material.
@@ -356,10 +373,15 @@ Chỉ làm sau khi Weapon + Shop + Merge đã vui.
 
 # Current Status
 
-**Project Stage:** Pre-production\
-**Current Phase:** Phase 0 --- Project Setup\
-**Next Milestone:** Player di chuyển được trong arena với Orthographic
-Camera cố định.
+**Project Stage:** Prototype\
+**Current Phase:** Phase 3 --- Health & Damage (đã triển khai một phần)\
+**Implemented:** Arena Tilemap, camera follow, player movement,
+state machine Idle/Run/Die, directional animation, health/damage
+và Player HP UI.\
+**Next Milestone:** Enemy đuổi theo Player và gây sát thương khi tiếp xúc.
+
+**Validation:** Đã đối chiếu code và scene; chưa xác nhận bằng Play Mode.
+Các mục chưa hoàn thành ở Phase 0--2 vẫn được giữ trong checklist.
 
 # Development Rule
 
@@ -382,4 +404,4 @@ MOVEMENT
 ```
 
 **Project:** Shooter\
-**Progress Version:** 1.0
+**Progress Version:** 1.1
