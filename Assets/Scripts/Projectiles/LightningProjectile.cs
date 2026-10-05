@@ -1,10 +1,11 @@
 using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
+[RequireComponent(typeof(PoolItem))]
 public sealed class LightningProjectile : MonoBehaviour
 {
-    [SerializeField, Min(0.1f)] private float speed = 12f;
-    [SerializeField, Min(0.01f)] private float hitRadius = 0.1f;
+    private float speed;
+    private float hitRadius;
     [SerializeField, Min(0.01f)] private float boltLength = 0.5f;
     [SerializeField, Min(0f)] private float zigzag = 0.07f;
     [Header("Visual")]
@@ -18,38 +19,61 @@ public sealed class LightningProjectile : MonoBehaviour
     private float remainingDistance;
     private float traveledDistance;
     private bool launched;
+    private PoolItem poolItem;
+    private ProjectileData projectileData;
+    private CombatPoolManager poolManager;
 
     private void Awake()
     {
-        line = GetComponent<LineRenderer>();
-        
+        CacheComponents();
+    }
+
+    private void CacheComponents()
+    {
+        if (line == null)
+            line = GetComponent<LineRenderer>();
+
+        if (poolItem == null)
+            poolItem = GetComponent<PoolItem>();
+
         line.widthMultiplier = width;
         line.useWorldSpace = true;
         line.positionCount = 7;
-        line.enabled = false;
     }
 
     public void Launch(
-        Vector2 fireDirection,
-        float attackDamage,
-        float maxDistance,
-        LayerMask targetLayer)
+    ProjectileData data,
+    Vector2 fireDirection,
+    float attackDamage,
+    LayerMask targetLayer,
+    CombatPoolManager manager)
     {
+        CacheComponents();
+
+        projectileData = data;
+        poolManager = manager;
+
         direction = fireDirection.normalized;
         damage = attackDamage;
-        remainingDistance = maxDistance;
         enemyLayer = targetLayer;
+
+        speed = Mathf.Max(0.1f, data.speed);
+        hitRadius = Mathf.Max(0.01f, data.hitRadius);
+        remainingDistance = Mathf.Max(0.1f, data.maxDistance);
         traveledDistance = 0f;
+        spawnFrame = Time.frameCount;
 
         if (direction.sqrMagnitude < 0.001f)
         {
-            Destroy(gameObject);
+            poolItem.ReturnToPool();
             return;
         }
 
         launched = true;
+
+        // Đã gán xong dữ liệu rồi mới bật object.
+        gameObject.SetActive(true);
         line.enabled = true;
-        spawnFrame = Time.frameCount;
         DrawBolt();
     }
 
@@ -82,8 +106,21 @@ public sealed class LightningProjectile : MonoBehaviour
             if (enemy == null || !enemy.IsAlive)
                 continue;
 
+            // Chặn xử lý va chạm lần thứ hai.
+            launched = false;
+
+            // Lấy tâm trước khi gây damage vì enemy có thể chết và bị tắt.
+            Vector3 effectPosition = hit.collider.bounds.center;
+            effectPosition.z = transform.position.z;
+
             enemy.TakeDamage(damage);
-            Destroy(gameObject);
+
+            poolManager.PlayVfx(
+                projectileData.hitVfx,
+                effectPosition
+            );
+
+            poolItem.ReturnToPool();
             return;
         }
 
@@ -93,7 +130,7 @@ public sealed class LightningProjectile : MonoBehaviour
 
         if (remainingDistance <= 0f)
         {
-            Destroy(gameObject);
+            poolItem.ReturnToPool();
             return;
         }
 
@@ -139,5 +176,19 @@ public sealed class LightningProjectile : MonoBehaviour
 
         if (renderer != null)
             renderer.widthMultiplier = width;
+    }
+    private void OnDisable()
+    {
+        launched = false;
+        damage = 0f;
+        remainingDistance = 0f;
+        traveledDistance = 0f;
+        direction = Vector2.zero;
+
+        projectileData = null;
+        poolManager = null;
+
+        if (line != null)
+            line.enabled = false;
     }
 }

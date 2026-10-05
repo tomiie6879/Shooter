@@ -5,7 +5,8 @@ public sealed class SpiritLightningAttack : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private Transform firePoint;
-    [SerializeField] private LightningProjectile projectilePrefab;
+    [SerializeField] private ProjectileData projectileData;
+    [SerializeField] private CombatPoolManager poolManager;
     [SerializeField] private LayerMask enemyLayer;
 
     [Header("Attack")]
@@ -24,10 +25,12 @@ public sealed class SpiritLightningAttack : MonoBehaviour
         if (firePoint == null)
             firePoint = transform;
 
-        if (projectilePrefab == null || playerHealth == null)
+        if (projectileData == null ||
+    poolManager == null ||
+    playerHealth == null)
         {
             Debug.LogError(
-                "SpiritLightningAttack thiếu Projectile Prefab hoặc Player Health.",
+                "SpiritLightningAttack thiếu Projectile Data, Pool Manager hoặc Player Health.",
                 this
             );
 
@@ -54,20 +57,15 @@ public sealed class SpiritLightningAttack : MonoBehaviour
         if (direction.sqrMagnitude < 0.0001f)
             direction = Vector2.right;
 
-        LightningProjectile projectile = Instantiate(
-            projectilePrefab,
-            firePoint.position,
-            Quaternion.identity
-        );
+        bool fired = poolManager.TryFire(
+                    projectileData,
+                    firePoint.position,
+                    direction,
+                    damage,
+                    enemyLayer  );
 
-        projectile.Launch(
-            direction,
-            damage,
-            range,
-            enemyLayer
-        );
-
-        nextAttackTime = Time.time + cooldown;
+        // Nếu pool đang hết đạn, đợi ngắn rồi thử lại.
+        nextAttackTime = Time.time + (fired ? cooldown : 0.1f);
     }
 
     private Collider2D FindNearestEnemy()
