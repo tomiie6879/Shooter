@@ -23,7 +23,7 @@ public sealed class PlayerHealth : MonoBehaviour, IDamageable , IHealth
     }
     public void TakeDamage(float damage)
     {
-        if(!IsAlive || damage <= 0f)
+        if (!IsAlive || damage <= 0f || Time.timeScale <= 0f)
         {
             return;
         }

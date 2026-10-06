@@ -2,49 +2,89 @@ using UnityEngine;
 
 public sealed class EnemySpawner : MonoBehaviour
 {
-    [SerializeField] private CombatPoolManager poolManager;
-    [SerializeField] private EnemyData enemyData;
-    [SerializeField] private PlayerHealth player;
+    private CombatPoolManager poolManager;
+    private PlayerHealth player;
+    private Transform[] spawnPoints;
 
-    [SerializeField] private Transform[] spawnPoints;
-    [SerializeField, Min(0.1f)] private float interval = 2f;
+    private EnemySpawnGroup[] groups;
+    private float[] nextSpawnTimes;
 
-    private float nextSpawnTime;
     private int pointIndex;
+    private bool isSpawning;
 
-    private void Start()
+    public void Initialize(
+        CombatPoolManager pool,
+        PlayerHealth target,
+        Transform[] points)
     {
-        if (poolManager == null ||
-            enemyData == null ||
-            player == null ||
-            spawnPoints == null ||
-            spawnPoints.Length == 0)
+        StopSpawning();
+
+        poolManager = pool;
+        player = target;
+        spawnPoints = points;
+        pointIndex = 0;
+    }
+
+    public void BeginWave(WaveSettings wave)
+    {
+        StopSpawning();
+
+        groups = wave.spawnGroups;
+        nextSpawnTimes = new float[groups.Length];
+
+        for (int i = 0; i < nextSpawnTimes.Length; i++)
         {
-            Debug.LogError("EnemySpawner chưa được gán đủ thông tin.", this);
-            enabled = false;
+            // Mỗi nhóm có thể spawn ngay khi wave bắt đầu.
+            nextSpawnTimes[i] = Time.time;
         }
+
+        isSpawning = true;
+    }
+
+    public void StopSpawning()
+    {
+        isSpawning = false;
     }
 
     private void Update()
     {
-        if (!player.IsAlive ||
+        if (!isSpawning ||
+            poolManager == null ||
+            !poolManager.IsInitialized ||
+            player == null ||
+            !player.IsAlive ||
             !player.gameObject.activeInHierarchy ||
-            Time.time < nextSpawnTime)
+            Time.timeScale <= 0f ||
+            spawnPoints == null ||
+            spawnPoints.Length == 0)
         {
             return;
         }
 
-        Transform point = spawnPoints[pointIndex];
-        pointIndex = (pointIndex + 1) % spawnPoints.Length;
+        for (int i = 0; i < groups.Length; i++)
+        {
+            if (Time.time < nextSpawnTimes[i])
+                continue;
 
-        bool spawned = point != null &&
-            poolManager.TrySpawnEnemy(
-                enemyData,
-                point.position,
-                player
-            );
+            Transform point = spawnPoints[pointIndex];
+            pointIndex = (pointIndex + 1) % spawnPoints.Length;
 
-        // Pool đầy thì đợi rồi thử lại, không Instantiate thêm.
-        nextSpawnTime = Time.time + (spawned ? interval : 0.5f);
+            EnemySpawnGroup group = groups[i];
+
+            bool spawned = point != null &&
+                poolManager.TrySpawnEnemy(
+                    group.enemy,
+                    point.position,
+                    player
+                );
+
+            nextSpawnTimes[i] =
+                Time.time + (spawned ? group.interval : 0.5f);
+        }
+    }
+
+    private void OnDisable()
+    {
+        StopSpawning();
     }
 }

@@ -94,6 +94,10 @@ public sealed class EnemyChase : MonoBehaviour
 
         health.ResetHealth(data.maxHealth);
 
+        EnemyContactDamage contactAttack = GetComponent<EnemyContactDamage>();
+        if (contactAttack != null)
+            contactAttack.Configure(data.contactDamage);
+
         transform.position = position;
 
         // Reset trạng thái vật lý từ lần sử dụng trước.

@@ -129,6 +129,7 @@ GameObject:
   - component: {fileID: 1184836192506766080}
   - component: {fileID: 1909898976182317449}
   - component: {fileID: 7764563344145340194}
+  - component: {fileID: 6149082773915428610}
   m_Layer: 6
   m_Name: PF_Slime
   m_TagString: Untagged
@@ -235,7 +236,7 @@ Rigidbody2D:
     serializedVersion: 2
     m_Bits: 0
   m_Interpolate: 0
-  m_SleepingMode: 1
+  m_SleepingMode: 0
   m_CollisionDetection: 0
   m_Constraints: 0
 --- !u!114 &1909898976182317449
@@ -266,6 +267,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92ed9ac74a6943144a7b97f7fccb653f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PoolItem
+--- !u!114 &6149082773915428610
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1993196022558105379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d27d93ecb3c4fd9b5a06b6f7b40f86a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyContactDamage
+  damage: 10
+  damageInterval: 0.6
 --- !u!1 &7529734564359994438
 GameObject:
   m_ObjectHideFlags: 0

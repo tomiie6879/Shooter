@@ -17,3 +17,4 @@ MonoBehaviour:
   maxHealth: 30
   moveSpeed: 2
   stopDistance: 0.15
+  contactDamage: 10

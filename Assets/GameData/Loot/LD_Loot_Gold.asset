@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f76d4afd8f5440b438008237a6fc5b2e, type: 3}
+  m_Name: LD_Loot_Gold
+  m_EditorClassIdentifier: Assembly-CSharp::LootData
+  kind: 0
+  prefab: {fileID: 8589847167195229417, guid: 6453bbe49f1f4f24698f7a662f5c2649, type: 3}
+  prewarmCount: 100
+  attractRadius: 2
+  collectDistance: 0.15
+  pickupDelay: 0.2
+  initialSpeed: 10
+  acceleration: 25
+  maxSpeed: 25

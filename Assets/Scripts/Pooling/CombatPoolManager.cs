@@ -4,7 +4,7 @@ using UnityEngine;
 [DefaultExecutionOrder(-100)]
 public sealed class CombatPoolManager : MonoBehaviour
 {
-    [SerializeField] private GameData gameData;
+    
 
     private readonly Dictionary<ScriptableObject, Queue<PoolItem>>
         pools = new Dictionary<ScriptableObject, Queue<PoolItem>>();
@@ -13,21 +13,33 @@ public sealed class CombatPoolManager : MonoBehaviour
         new List<PoolItem>();
 
     private Transform inactiveRoot;
+    private LootData goldLoot;
+    private LootData energyLoot;
+    private PlayerHealth lootPlayer;
+    private RunCurrency runCurrency;
 
-    private void Awake()
+    public bool IsInitialized { get; private set; }
+
+    public bool Initialize(GameData gameData, LevelData level)
     {
-        if (gameData == null)
+        if (IsInitialized)
+            return true;
+
+        if (gameData == null || level == null || !level.IsValid())
         {
-            Debug.LogError("CombatPoolManager chưa được gán GameData.", this);
-            enabled = false;
-            return;
+            Debug.LogError("Data khởi tạo pool không hợp lệ.", this);
+            return false;
         }
 
-        GameObject storage = new GameObject("Inactive");
-        storage.transform.SetParent(transform, false);
-        storage.SetActive(false);
-        inactiveRoot = storage.transform;
+        if (inactiveRoot == null)
+        {
+            GameObject storage = new GameObject("Inactive");
+            storage.transform.SetParent(transform, false);
+            storage.SetActive(false);
+            inactiveRoot = storage.transform;
+        }
 
+        // Projectile và VFX dùng chung.
         if (gameData.projectiles != null)
         {
             foreach (ProjectileData data in gameData.projectiles)
@@ -39,22 +51,48 @@ public sealed class CombatPoolManager : MonoBehaviour
                     data, data.prefab, data.prewarmCount
                 );
 
-                // Tự đăng ký VFX được projectile tham chiếu.
+                if (!pools.ContainsKey(data))
+                    return false;
+
                 RegisterVfx(data.castVfx);
                 RegisterVfx(data.hitVfx);
+
+                if (data.castVfx != null &&
+                    !pools.ContainsKey(data.castVfx))
+                    return false;
+
+                if (data.hitVfx != null &&
+                    !pools.ContainsKey(data.hitVfx))
+                    return false;
             }
         }
 
         if (gameData.vfx != null)
         {
             foreach (VfxData data in gameData.vfx)
-                RegisterVfx(data);
-        }
-        if (gameData.enemies != null)
-        {
-            foreach (EnemyData data in gameData.enemies)
             {
                 if (data == null)
+                    continue;
+
+                RegisterVfx(data);
+
+                if (!pools.ContainsKey(data))
+                    return false;
+            }
+        }
+
+        // Chỉ chuẩn bị Enemy được dùng trong màn này.
+        HashSet<EnemyData> registeredEnemies =
+            new HashSet<EnemyData>();
+
+        foreach (WaveSettings wave in level.waves)
+        {
+            foreach (EnemySpawnGroup group in wave.spawnGroups)
+            {
+                EnemyData data = group.enemy;
+
+                // Một loại xuất hiện nhiều wave vẫn chỉ tạo pool một lần.
+                if (!registeredEnemies.Add(data))
                     continue;
 
                 if (data.prefab == null ||
@@ -62,20 +100,53 @@ public sealed class CombatPoolManager : MonoBehaviour
                     data.prefab.GetComponent<Rigidbody2D>() == null)
                 {
                     Debug.LogError(
-                        $"EnemyData {data.name}: prefab thiếu EnemyHealth hoặc Rigidbody2D.",
+                        $"EnemyData {data.name}: prefab thiếu " +
+                        "EnemyHealth hoặc Rigidbody2D.",
                         data
                     );
 
-                    continue;
+                    return false;
                 }
 
                 Prewarm<EnemyChase>(
-                    data,
-                    data.prefab,
-                    data.prewarmCount
+                    data, data.prefab, data.prewarmCount
                 );
+
+                if (!pools.ContainsKey(data))
+                    return false;
             }
         }
+        goldLoot = gameData.goldLoot;
+        energyLoot = gameData.energyLoot;
+
+        if (goldLoot == null ||
+            energyLoot == null ||
+            goldLoot.kind != LootKind.Gold ||
+            energyLoot.kind != LootKind.EnergyShard)
+        {
+            Debug.LogError("GameData chưa gán đúng Gold Loot / Energy Loot.", this);
+            return false;
+        }
+
+        Prewarm<LootPickup>(
+            goldLoot,
+            goldLoot.prefab,
+            goldLoot.prewarmCount
+        );
+
+        Prewarm<LootPickup>(
+            energyLoot,
+            energyLoot.prefab,
+            energyLoot.prewarmCount
+        );
+
+        if (!pools.ContainsKey(goldLoot) ||
+            !pools.ContainsKey(energyLoot))
+        {
+            return false;
+        }
+        IsInitialized = true;
+        return true;
     }
 
     private void RegisterVfx(VfxData data)
@@ -111,9 +182,9 @@ public sealed class CombatPoolManager : MonoBehaviour
             return false;
 
         EnemyChase enemy = item.GetComponent<EnemyChase>();
-
-        // Reset HP, target và vận tốc khi object còn đang tắt.
         enemy.PrepareSpawn(data, player, position);
+
+        item.GetComponent<EnemyHealth>().ConfigureDrops(this, data);
 
         item.gameObject.SetActive(true);
         return true;
@@ -247,6 +318,125 @@ public sealed class CombatPoolManager : MonoBehaviour
         {
             if (item != null && item.IsRented)
                 Return(item);
+        }
+    }
+    public void ConfigureLoot(
+    PlayerHealth player,
+    RunCurrency currency)
+    {
+        lootPlayer = player;
+        runCurrency = currency;
+    }
+
+    public void DropEnemyLoot(EnemyData enemy, Vector3 position)
+    {
+        if (!IsInitialized ||
+            enemy == null ||
+            lootPlayer == null ||
+            runCurrency == null ||
+            !runCurrency.CollectionEnabled)
+        {
+            return;
+        }
+
+        // Energy luôn rơi.
+        for (int i = 0; i < Mathf.Max(1, enemy.energyShardAmount); i++)
+        {
+            SpawnLoot(energyLoot, 1, Scatter(position));
+        }
+
+        float chance = Mathf.Clamp(enemy.goldDropChance, 0f, 100f);
+
+        bool dropGold = chance >= 100f ||
+            (chance > 0f && Random.value < chance / 100f);
+
+        if (dropGold)
+        {
+            SpawnLoot(
+                goldLoot,
+                Mathf.Max(1, enemy.goldAmount),
+                Scatter(position)
+            );
+        }
+    }
+
+    private Vector3 Scatter(Vector3 position)
+    {
+        Vector2 offset = Random.insideUnitCircle * 0.25f;
+        return position + new Vector3(offset.x, offset.y, 0f);
+    }
+
+    private void SpawnLoot(
+        LootData data,
+        int amount,
+        Vector3 position)
+    {
+        PoolItem item = Rent(
+            data,
+            position,
+            Quaternion.identity,
+            float.PositiveInfinity
+        );
+
+        if (item != null)
+        {
+            item.GetComponent<LootPickup>().Launch(
+                data,
+                amount,
+                lootPlayer,
+                runCurrency
+            );
+
+            return;
+        }
+
+        // Pool đầy: gộp vào vật phẩm cùng loại đang nằm gần nhất.
+        LootPickup nearest = null;
+        LootPickup fallback = null;
+        float nearestDistance = float.PositiveInfinity;
+
+        foreach (PoolItem existing in allItems)
+        {
+            if (existing == null ||
+                !existing.IsRented ||
+                existing.Key != data)
+            {
+                continue;
+            }
+
+            LootPickup pickup = existing.GetComponent<LootPickup>();
+
+            if (pickup == null || !pickup.IsLive)
+                continue;
+
+            fallback = pickup;
+
+            if (!pickup.CanMerge)
+                continue;
+
+            float distance =
+                (pickup.transform.position - position).sqrMagnitude;
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = pickup;
+            }
+        }
+
+        // Nếu tất cả đang bay, vẫn giữ giá trị bằng cách gộp.
+        LootPickup receiver = nearest != null ? nearest : fallback;
+
+        if (receiver != null)
+        {
+            receiver.AddAmount(amount);
+        }
+        else
+        {
+            Debug.LogError(
+                $"Không có pool hoặc vật phẩm để nhận {data.name}.",
+                this
+            );
         }
     }
 }
