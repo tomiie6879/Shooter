@@ -3,12 +3,13 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Shooter/Data/Game Data")]
 public sealed class GameData : ScriptableObject
 {
+    [Header("Spirits")]
+    public SpiritLoadout spiritLoadout;
+
     [Header("Loot")]
     public LootData goldLoot;
     public LootData energyLoot;
 
-    [Header("Shop")]
-    public ShopItemData[] shopItems;
     public ProjectileData[] projectiles;
     public VfxData[] vfx;
 

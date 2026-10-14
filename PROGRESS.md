@@ -1,407 +1,153 @@
-# SHOOTER --- DEVELOPMENT PROGRESS
+# SHOOTER — DEVELOPMENT PROGRESS
 
-> Checklist phát triển game Shooter --- 2D Top-Down Arena Roguelite /
-> Auto-Shooter.
+**Cập nhật:** 10/10/2026 · **Giai đoạn:** Prototype · **Phiên bản:** 2.0
 
-## Quy ước
+## Quy ước và xác nhận
 
--   [ ] TODO
--   [x] DONE
--   🔄 IN PROGRESS
--   ⛔ BLOCKED
+- [x] Tìm thấy triển khai trong code/tài nguyên được đối chiếu.
+- [ ] Chưa triển khai hoặc chưa có bằng chứng xác nhận hoàn thành.
 
-Các mục [x] dưới đây ghi nhận phần đã triển khai trong code/scene, chưa
-xác nhận bằng Play Mode hoặc kiểm thử trên thiết bị mobile.
+Có code không đồng nghĩa đã chạy đúng trong Play Mode hoặc đạt chất lượng phát hành. Lần này chỉ sửa tài liệu, không sửa code/scene/prefab; chưa chạy Play Mode, build hoặc benchmark. Giữ nguyên các thay đổi đang có của người dùng.
 
-## Mục tiêu hiện tại
+## Hướng sản phẩm mới
 
-Ưu tiên tạo Vertical Slice:
-
-``` text
-MOVE → ENEMY CHASE → AUTO SHOOT → KILL → XP → LEVEL UP
-→ WAVE → SHOP → NEXT WAVE → BOSS
+```text
+Home → Chuẩn bị linh vật → Battle/Wave → Shop bằng Energy
+→ Victory nhận Gold / Thua mất Gold trận
+→ Home → Thu thập, cho ăn, nâng cấp, tiến hóa → Trận tiếp theo
 ```
 
-Không tăng số lượng content trước khi core loop đủ vui.
-
-## PHASE 0 --- Project Setup
-
--   [x] Tạo Unity 6 project 2D.
--   [x] Thiết lập Git + Unity `.gitignore`.
--   [ ] Landscape + Android/iOS target.
--   [ ] Tạo folder structure.
--   [ ] Tạo scene Boot, MainMenu, Game, Result.
--   [ ] Sorting Layers.
--   [ ] Collision Layers.
-
-**Milestone:** Project sạch và chạy được Game scene.
-
-## PHASE 1 --- Camera & Arena
-
--   [x] Orthographic Main Camera.
--   [ ] Camera cố định.
--   [ ] Camera không làm child Player.
--   [ ] Arena landscape.
--   [x] Ground/background.
--   [ ] Arena Boundary.
--   [ ] Canvas Screen Space - Overlay.
--   [ ] Test nhiều aspect ratio mobile.
-
-**Milestone:** Arena hiển thị đúng trên mobile.
-
-**Hiện có:** Scene `Battle_01` với nền Tilemap và `CameraFollow` bám Player
-bằng `SmoothDamp`. Camera cố định theo thiết kế vẫn chưa triển khai.
-
-## PHASE 2 --- Player Movement
-
--   [ ] Player prefab.
--   [x] Rigidbody2D + Collider2D.
--   [x] PlayerController.
--   [x] Keyboard input cho Editor.
--   [ ] Virtual Joystick.
--   [x] Normalize movement.
--   [x] Move Speed.
--   [ ] Arena boundary.
--   [x] Idle/Move animation.
-
-**Milestone:** Player di chuyển mượt.
-
-**Hiện có:** State machine `Idle/Run/Die`, animation theo 8 hướng và input
-bàn phím qua `Input.GetAxisRaw`. Player đang nằm trong scene, chưa có prefab riêng.
-
-## PHASE 3 --- Health & Damage
-
--   [x] IDamageable.
--   [x] PlayerHealth.
--   [x] EnemyHealth.
--   [ ] DamageSystem.
--   [x] Max HP.
--   [ ] Hit feedback.
--   [x] Death.
--   [ ] Player i-frame.
--   [x] HP UI.
-
-**Hiện có:** `IHealth`, nhận sát thương, hồi máu cho Player và cập nhật thanh
-HP qua event `HealthChanged`. Khi chết, Player dừng di chuyển, tắt collider
-và gửi trigger animation; Enemy bị vô hiệu hóa. Animation chết cần kiểm tra
-trong Play Mode; chưa có luồng Game Over.
-
-## PHASE 4 --- Enemy Foundation
-
--   [ ] EnemyData ScriptableObject.
--   [ ] EnemyController.
--   [ ] Chase.
--   [ ] Separation.
--   [ ] Contact Damage.
--   [ ] Enemy Pooling.
--   [ ] Safe spawn distance.
-
-### Chaser
-
--   [ ] Movement.
--   [ ] Contact damage.
--   [ ] Death.
-
-### Dasher
-
--   [ ] Telegraph.
--   [ ] Lock direction.
--   [ ] Dash.
--   [ ] Recovery.
-
-### Shooter
-
--   [ ] Maintain distance.
--   [ ] Aim.
--   [ ] Projectile.
--   [ ] Fire cooldown.
-
-**Milestone:** 3 Enemy archetype hoạt động.
-
-## PHASE 5 --- Auto Attack
-
--   [ ] WeaponData.
--   [ ] WeaponController.
--   [ ] TargetFinder.
--   [ ] Enemy-in-range query.
--   [ ] Independent target per Weapon.
--   [ ] Attack cooldown.
--   [ ] Projectile.
--   [ ] Projectile Pooling.
--   [ ] Damage on hit.
--   [ ] Crit.
--   [ ] Pierce.
--   [ ] Knockback.
-
-**Milestone:** Player tự động bắn và kill enemy.
-
-## PHASE 6 --- Multiple Weapons
-
--   [ ] WeaponInventory.
--   [ ] 6 Weapon Slots.
--   [ ] Equip/Unequip.
--   [ ] Independent cooldown.
--   [ ] Independent targeting.
--   [ ] Weapon UI.
-
-### MVP Weapons
-
--   [ ] Pistol.
--   [ ] SMG.
--   [ ] Shotgun.
--   [ ] Rifle/Sniper.
--   [ ] Rocket Launcher.
--   [ ] Laser/Drone.
-
-## PHASE 7 --- Wave System
-
--   [ ] WaveData.
--   [ ] WaveManager.
--   [ ] Wave timer.
--   [ ] Spawn count/rate.
--   [ ] Enemy composition.
--   [ ] Wave start/end.
--   [ ] Difficulty scaling.
--   [ ] 10 prototype Waves.
-
-**Milestone:** Chơi liên tục Wave 1--10.
-
-## PHASE 8 --- XP & Level Up
-
--   [ ] Enemy XP reward.
--   [ ] XP drop/pickup.
--   [ ] XP Bar.
--   [ ] PlayerLevel.
--   [ ] XP curve.
--   [ ] Level Up pause.
--   [ ] Generate upgrade choices.
--   [ ] Apply Stat.
--   [ ] Resume.
-
-### MVP Stats
-
--   [ ] Max HP.
--   [ ] HP Regen.
--   [ ] Armor.
--   [ ] Dodge.
--   [ ] Move Speed.
--   [ ] Damage.
--   [ ] Ranged Damage.
--   [ ] Attack Speed.
--   [ ] Crit Chance.
--   [ ] Crit Damage.
--   [ ] Range.
--   [ ] Pickup Range.
--   [ ] Luck.
-
-## PHASE 9 --- Run Currency
-
--   [ ] Material drop.
--   [ ] Pickup.
--   [ ] RunCurrencyManager.
--   [ ] Material HUD.
--   [ ] Reset per run.
--   [ ] Economy balance.
-
-## PHASE 10 --- Shop
-
--   [ ] ShopManager.
--   [ ] Shop UI.
--   [ ] Generate offers.
--   [ ] Weapon offers.
--   [ ] Item offers.
--   [ ] Buy.
--   [ ] Sell.
--   [ ] Reroll + cost.
--   [ ] Lock.
--   [ ] Shop between Waves.
-
-**Milestone:** `Wave → Shop → Wave` hoàn chỉnh.
-
-## PHASE 11 --- Weapon Merge
-
--   [ ] Tier I--IV.
--   [ ] Duplicate detection.
--   [ ] Merge rules.
--   [ ] Merge feedback.
--   [ ] Tier stats.
--   [ ] Shop duplicate support.
-
-## PHASE 12 --- Items
-
--   [ ] ItemData.
--   [ ] ItemManager.
--   [ ] StatModifier.
--   [ ] Stack rules.
--   [ ] Item Shop/UI.
--   [ ] 10--12 MVP Items.
-
-## PHASE 13 --- Synergy
-
--   [ ] Weapon Tags.
--   [ ] SynergyManager.
--   [ ] 2-piece.
--   [ ] 4-piece.
--   [ ] 6-piece.
--   [ ] Synergy UI.
--   [ ] RAPID.
--   [ ] EXPLOSIVE.
--   [ ] ENERGY.
--   [ ] DRONE.
-
-## PHASE 14 --- Boss
-
--   [ ] Boss architecture.
--   [ ] Boss HP bar.
--   [ ] Spawn.
--   [ ] Phase logic.
--   [ ] Telegraph.
--   [ ] Charge.
--   [ ] Projectile.
--   [ ] AoE.
--   [ ] Summon.
--   [ ] Death/reward.
-
-## PHASE 15 --- Complete Run Flow
-
--   [ ] RunManager.
--   [ ] Start Run.
--   [ ] Wave/Shop/LevelUp/Pause states.
--   [ ] Victory.
--   [ ] Game Over.
--   [ ] Result screen.
--   [ ] Restart.
--   [ ] Return Home.
-
-**Milestone:** Một run hoàn chỉnh từ Start → Result.
-
-## PHASE 16 --- Meta Progression
-
--   [ ] Meta Currency.
--   [ ] Save/Load.
--   [ ] Unlock Character.
--   [ ] Unlock Weapon.
--   [ ] Unlock Item.
--   [ ] Unlock Arena.
--   [ ] Unlock Difficulty.
--   [ ] Achievement/Challenge hooks.
-
-## PHASE 17 --- Weapon Evolution
-
-Chỉ làm sau khi Weapon + Shop + Merge đã vui.
-
--   [ ] Evolution requirements.
--   [ ] Branch A/B.
--   [ ] Evolution selection UI.
--   [ ] Evolution effects/VFX.
--   [ ] Data-driven definitions.
-
-## PHASE 18 --- UI/UX
-
-**Hiện có một phần:** Scene có thanh HP đã nối với `PlayerHealth`, cùng
-giao diện wave/gold. Chưa có logic wave/currency để hoàn thiện HUD.
-
--   [ ] Main Menu.
--   [ ] HUD.
--   [ ] HP / XP / Wave / Timer / Material.
--   [ ] Weapon Slots.
--   [ ] Level Up Popup.
--   [ ] Shop.
--   [ ] Pause.
--   [ ] Boss HP.
--   [ ] Victory / Game Over / Result.
--   [ ] Mobile Safe Area.
-
-## PHASE 19 --- Audio & Feedback
-
--   [ ] Weapon SFX.
--   [ ] Hit/Death SFX.
--   [ ] Pickup/Level Up/Shop SFX.
--   [ ] Boss music.
--   [ ] Hit/Crit/Explosion VFX.
--   [ ] Controlled screen shake.
--   [ ] Damage numbers nếu cần.
-
-## PHASE 20 --- Mobile Optimization
-
--   [ ] Enemy Pooling.
--   [ ] Projectile Pooling.
--   [ ] Drop Pooling.
--   [ ] Không Instantiate/Destroy liên tục.
--   [ ] Tối ưu TargetFinder/spatial query.
--   [ ] Sprite Atlas.
--   [ ] CPU/GPU/Memory profiling.
--   [ ] Test 50 enemy.
--   [ ] Test 100 enemy.
--   [ ] Stress test projectile.
--   [ ] Test Android thật.
--   [ ] Test iOS thật.
-
-# MVP RELEASE CHECKLIST
-
--   [ ] Player movement mượt.
--   [ ] Orthographic fixed camera.
--   [ ] 3 Enemy archetypes.
--   [ ] 6 Weapons.
--   [ ] Independent Weapon targeting.
--   [ ] 10 Waves.
--   [ ] XP + Level Up + Stats.
--   [ ] Material.
--   [ ] Shop + Reroll.
--   [ ] Weapon Merge.
--   [ ] Items.
--   [ ] 1 Boss.
--   [ ] Victory/Game Over.
--   [ ] Run hoàn chỉnh.
--   [ ] Mobile performance đạt mục tiêu.
--   [ ] Combat đủ vui trước khi tăng content.
-
-# Sau MVP
-
--   [ ] 20+ Waves.
--   [ ] Multiple Characters.
--   [ ] Multiple Arenas.
--   [ ] More Bosses.
--   [ ] Deep Weapon Evolution.
--   [ ] Advanced Synergy.
--   [ ] Daily Challenge.
--   [ ] Endless Mode.
--   [ ] Difficulty Tiers.
--   [ ] Cosmetic.
--   [ ] Achievements.
--   [ ] Leaderboard.
-
-# Current Status
-
-**Project Stage:** Prototype\
-**Current Phase:** Phase 3 --- Health & Damage (đã triển khai một phần)\
-**Implemented:** Arena Tilemap, camera follow, player movement,
-state machine Idle/Run/Die, directional animation, health/damage
-và Player HP UI.\
-**Next Milestone:** Enemy đuổi theo Player và gây sát thương khi tiếp xúc.
-
-**Validation:** Đã đối chiếu code và scene; chưa xác nhận bằng Play Mode.
-Các mục chưa hoàn thành ở Phase 0--2 vẫn được giữ trong checklist.
-
-# Development Rule
-
-> **Không tăng content trước khi core loop vui.**
-
-``` text
-MOVEMENT
-→ ENEMY
-→ AUTO ATTACK
-→ WEAPON
-→ WAVE
-→ XP
-→ LEVEL UP
-→ SHOP
-→ MERGE
-→ BOSS
-→ COMPLETE RUN
-→ POLISH
-→ MORE CONTENT
-```
-
-**Project:** Shooter\
-**Progress Version:** 1.1
+Nhà chính và phát triển linh vật là kế hoạch mới, chưa triển khai. Chi tiết ở [README.md](README.md).
+
+## 1. Player và chiến đấu
+
+- [x] Scene Battle_01, arena Tilemap và map prefab MAP_Desert.
+- [x] PlayerController, input bàn phím, state Idle/Run/Die và animation di chuyển.
+- [x] PlayerHealth, EnemyHealth, IHealth/IDamageable và hồi máu.
+- [x] EnemyChase, EnemyData và EnemyContactDamage; cooldown riêng mặc định 0,6 giây.
+- [x] SpiritOrbit, SpiritLightningAttack, LightningProjectile và VFX trúng đòn.
+- [x] CombatPoolManager/PoolItem cho Enemy, projectile, VFX, loot; reset Enemy khi tái sử dụng.
+- [ ] Kiểm thử nhiều Enemy tiếp xúc cùng lúc, sát thương từng con độc lập.
+- [ ] Kiểm thử animation chết và dừng sát thương trong shop.
+- [ ] Virtual joystick, arena boundary và kiểm tra Android/iOS.
+- [ ] Separation, Dasher, Shooter và Boss thực tế.
+
+Nguồn: Assets/Scripts/Player, Enemy, Attack, Projectiles, Pooling, VFX. Có CameraFollow; camera cố định của thiết kế cũ chưa được coi là hoàn thành.
+
+## 2. Level và wave theo data
+
+- [x] GameData, LevelData, WaveSettings, EnemySpawnGroup và MapReferences.
+- [x] LevelLoader/GameSession: Battle_01 chung, tải map và chuẩn bị pool theo Level.
+- [x] WaveManager: thời lượng từng wave, shop giữa wave, Victory cuối Level.
+- [x] Timer hiển thị giây, Wave Fill theo số wave hoàn thành.
+- [x] Hàm Next Level và Replay trong LevelLoader.
+- [x] LD_Level01 / LD_Level02 có mã level_01 / level_02.
+- [ ] Kiểm thử lại OnClick Next Level/Replay và reference scene đã lưu.
+- [ ] Menu chọn màn tự sinh và mở khóa màn được xác nhận hoạt động.
+
+Data đọc lần này: Level01 có 3 wave × 10 giây, Level02 có 3 wave × 15 giây. Đây là cấu hình test, không phải 10 wave × 60 giây đã hoàn tất; hệ thống hỗ trợ tùy chỉnh theo LevelData.
+
+## 3. Loot và tiền tệ
+
+- [x] EnemyHealth gọi DropEnemyLoot trước khi trả Enemy về pool.
+- [x] LootData/LootPickup, prefab PF_GoldPickup và PF_EnergyShardPickup.
+- [x] Tỷ lệ Gold, lượng Energy cấu hình theo EnemyData.
+- [x] Thả đồ quanh vị trí chết, hút về Player, cộng khi đến gần.
+- [x] Pool loot và gộp giá trị khi hết object rảnh.
+- [x] RunCurrency giữ Gold/Energy trận, cập nhật HUD bằng event.
+- [x] Settle chỉ trả Gold khi thắng; chặn trả thưởng lặp cùng trận.
+- [x] Ví Gold lưu PlayerPrefs; Energy reset khi bắt đầu Level mới.
+- [ ] Kiểm thử tỷ lệ 0%/100%, hút đồ, pool đầy, thắng/thua và tải lại game.
+- [ ] Xác nhận root prefab loot có PoolItem/LootPickup; lỗi khởi tạo pool từng được báo, chưa xác nhận đã hết bằng Play Mode.
+- [ ] Save có phiên bản/migration và kiểm thử tính nhất quán khi mở rộng bộ sưu tập.
+
+Loot scripts hiện ở Assets/Sprites/Loot; RunCurrency ở Assets/Scripts/Economy. Không tự di chuyển file trong lần cập nhật tài liệu này.
+
+## 4. Shop và kết thúc trận
+
+- [x] ShopItemData, ShopItemButton và ShopUI.
+- [x] Sinh nút từ shopItems, mua hồi máu bằng Energy.
+- [x] Kiểm tra đủ tiền, thiếu máu và đúng trạng thái Shop.
+- [x] Dừng thời gian/attack/thu thập trong Shop; ContinueAfterShop bắt đầu wave mới.
+- [x] Giữ Enemy/projectile/loot qua Shop; thu hồi khi kết thúc trận.
+- [x] Nhánh Victory/Defeat và text Gold thưởng trong code.
+- [ ] Kiểm thử popup, OnClick, nhấn lặp và không trừ tiền khi mua không hợp lệ.
+- [ ] Xác nhận HUD/RewardTMP và reference sau việc di chuyển script.
+- [ ] Món ngoài hồi máu, bán đồ, reroll và hiệu ứng khác.
+
+Nguồn: Assets/Sprites/Manager/WaveManager.cs, Assets/Scripts/Shop, Assets/Scripts/Economy/RunCurrency.cs.
+
+## 5. Nhà chính — chưa triển khai
+
+- [ ] Scene Home cho hoạt động ngoài trận, dùng chung cho mọi Level.
+- [ ] Home → chọn trận → Battle → Result → Return Home.
+- [ ] Hiển thị ví Gold lâu dài tại Home.
+- [ ] Souls/linh vật sở hữu đi lại: idle, wander và giới hạn vùng.
+- [ ] Tương tác xem thông tin/bộ sưu tập.
+- [ ] Nhà chăm sóc/nâng cấp và giao diện.
+- [ ] Vòng đời Home/Battle không nhân đôi Player, pool hoặc manager.
+
+## 6. Thu thập và lưu linh vật — chưa triển khai
+
+- [ ] Chốt quan hệ Souls/linh vật và số đồng hành mang vào trận.
+- [ ] Data định nghĩa và save trạng thái sở hữu riêng.
+- [ ] Danh sách sở hữu và hiển thị đúng tại Home.
+- [ ] Reward data cho trận quan trọng.
+- [ ] Chốt cách nhận, điều kiện thưởng và xử lý linh vật trùng.
+- [ ] Cấp thưởng một lần, lưu/tải lại bộ sưu tập.
+- [ ] Chọn đồng hành, đưa chỉ số/khả năng vào Battle.
+
+## 7. Cho ăn, nâng cấp, tiến hóa — chưa triển khai
+
+- [ ] Chốt nguồn thức ăn, chi phí Gold và điều kiện phát triển.
+- [ ] Cho ăn, cập nhật trạng thái phát triển.
+- [ ] Nâng cấp: kiểm tra/trừ tài nguyên và tăng sức mạnh.
+- [ ] Tiến hóa: điều kiện, hình ảnh và khả năng tương ứng.
+- [ ] Lưu cấp độ/tiến hóa xuyên Level và sau khi thoát game.
+- [ ] Kiểm thử không trừ hai lần, không sửa asset cấu hình gốc.
+- [ ] Cân bằng kiếm Gold → chăm sóc → đánh trận khó hơn.
+
+## 8. Chất lượng và hiệu năng
+
+- [ ] Kiểm tra reference sprite/animation Enemy sau thay đổi art hiện tại.
+- [ ] Kiểm tra compile sau di chuyển script; không Missing Script trong scene/prefab.
+- [ ] Profiling target query, loot/Enemy đông, CPU, bộ nhớ và FPS trên mobile.
+- [ ] Safe Area, tỷ lệ màn hình, điều khiển cảm ứng.
+- [ ] Âm thanh chiến đấu/nhặt đồ/shop và phản hồi UI/hit.
+- [ ] Cân bằng thời gian wave, spawn, Gold/Energy và giá Shop.
+
+Pooling đã có không đồng nghĩa đã xác nhận không lag; cần đo trước khi đánh dấu đạt hiệu năng.
+
+## Milestone tiếp theo
+
+1. Xác nhận trận hiện tại chạy trọn vòng; ưu tiên pool loot và liên kết UI.
+2. Home tối thiểu có ví Gold và một linh vật sở hữu đi lại; vào trận rồi quay về không mất dữ liệu.
+3. Một trận quan trọng thưởng một linh vật; nhận/lưu/hiển thị đúng một lần.
+4. Một luồng cho ăn → nâng cấp → tiến hóa có tác dụng trong trận.
+
+## Điều chỉnh roadmap cũ
+
+Trạng thái không còn dừng ở Phase 3 Health & Damage: code đã có wave, shop và loot. Checklist 6 vũ khí, XP/stat selection, weapon merge và synergy được hoãn, không ghi là hoàn thành và không còn là điều kiện MVP bắt buộc. Ưu tiên mới: chiến đấu ổn định + nhà chính + bộ sưu tập + phát triển linh vật.
+
+## 13/10/2026 — Chuyển Battle sang lịch spawn
+
+- Thay WaveManager bằng BattleManager, giữ GUID script và cập nhật reference Scene/LevelLoader.
+- Tách BattleProgress (luật thuần), EnemySpawner (lịch), BattleHUD (hiển thị).
+- LevelData dùng duration/spawnSchedules/boss; hai màn chuyển sang 120/180 giây, chưa gán Boss thực.
+- Hết giờ dừng quái thường; có Boss bắt buộc thì chờ sự kiện chết, không coi despawn là hạ Boss.
+- Gỡ shop giữa wave: script, data, prefab và cây UI khỏi Battle_01.
+- Tái sử dụng EnemyHealth, pool và RunCurrency; chưa triển khai rương/kho/vũ khí/Home/Pet.
+- Biên dịch toàn bộ runtime C# bằng compiler/thư viện Unity 6000.4.12f1: qua.
+- Tests/Battle/Run.ps1: luật thời gian và spawn lifecycle qua; dùng test doubles, chưa thay thế Play Mode.
+- Kiểm tra Scene không có reference nội bộ hỏng mới hoặc trùng fileID; chưa kiểm thử chạy Unity thực tế.
+- Hướng dẫn: Documentation/BattleMigration/README.md.
+
+## 13/10/2026 — Spirit theo data/loadout
+
+- Thêm SpiritData, SpiritLoadout, SpiritContext/ISpiritAttack, SpiritController và PlayerSpiritManager.
+- SpiritProjectileAttack thay SpiritLightningAttack, dùng chung cho kiểu bắn đạn; tìm mục tiêu dùng buffer tái sử dụng.
+- LevelLoader khởi tạo đội hình và pool đạn/VFX; BattleManager bật/tắt qua PlayerSpiritManager.
+- Tạo SD_Lightning và SL_Player, gán loadout trong GD_Game; ô Prefab còn chờ người dùng tạo PF.
+- Không sửa Scene/SpiritPoints. Cần thêm manager vào Player, gán điểm/layer và prefab trước khi Play.
+- Runtime biên dịch với Unity 6000.4.12f1 thành công; chưa chạy Play Mode.
+- Hướng dẫn: Documentation/Spirits/README.md.

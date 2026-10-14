@@ -4,6 +4,9 @@ public sealed class EnemyHealth : MonoBehaviour, IHealth, IDamageable
 {
     [SerializeField, Min(1f)] private float maxHealth = 30f;
 
+    public event System.Action<EnemyHealth> Died;
+    public event System.Action<EnemyHealth> Despawned;
+
     private PoolItem poolItem;
     private CombatPoolManager dropPool;
     private EnemyData enemyData;
@@ -53,6 +56,7 @@ public sealed class EnemyHealth : MonoBehaviour, IHealth, IDamageable
 
     private void Die()
     {
+        Died?.Invoke(this);
         if (poolItem == null)
             poolItem = GetComponent<PoolItem>();
 
@@ -71,6 +75,9 @@ public sealed class EnemyHealth : MonoBehaviour, IHealth, IDamageable
 
     private void OnDisable()
     {
+        Despawned?.Invoke(this);
+        Died = null;
+        Despawned = null;
         dropPool = null;
         enemyData = null;
     }

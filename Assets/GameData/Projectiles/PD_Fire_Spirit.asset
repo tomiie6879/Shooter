@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cac8a908d602d534e9489358404247a0, type: 3}
+  m_Name: PD_Fire_Spirit
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileData
+  prefab: {fileID: 1250424781225104760, guid: 81b261bf32cdde348bfce963cb19aad6, type: 3}
+  prewarmCount: 10
+  speed: 12
+  maxDistance: 8
+  maxLifetime: 2
+  hitRadius: 0.1
+  castVfx: {fileID: 0}
+  hitVfx: {fileID: 11400000, guid: d2659694ca8b2d342937bd7b5cffc292, type: 2}

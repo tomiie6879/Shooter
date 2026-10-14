@@ -39,82 +39,25 @@ public sealed class CombatPoolManager : MonoBehaviour
             inactiveRoot = storage.transform;
         }
 
-        // Projectile và VFX dùng chung.
-        if (gameData.projectiles != null)
-        {
-            foreach (ProjectileData data in gameData.projectiles)
-            {
-                if (data == null)
-                    continue;
-
-                Prewarm<LightningProjectile>(
-                    data, data.prefab, data.prewarmCount
-                );
-
-                if (!pools.ContainsKey(data))
-                    return false;
-
-                RegisterVfx(data.castVfx);
-                RegisterVfx(data.hitVfx);
-
-                if (data.castVfx != null &&
-                    !pools.ContainsKey(data.castVfx))
-                    return false;
-
-                if (data.hitVfx != null &&
-                    !pools.ContainsKey(data.hitVfx))
-                    return false;
-            }
-        }
-
-        if (gameData.vfx != null)
-        {
-            foreach (VfxData data in gameData.vfx)
-            {
-                if (data == null)
-                    continue;
-
-                RegisterVfx(data);
-
-                if (!pools.ContainsKey(data))
-                    return false;
-            }
-        }
-
+        // Equipped spirits register their projectile/VFX dependencies after pool initialization.
+        // Catalog entries in GameData are not prewarmed unless used by the loadout.
         // Chỉ chuẩn bị Enemy được dùng trong màn này.
         HashSet<EnemyData> registeredEnemies =
             new HashSet<EnemyData>();
 
-        foreach (WaveSettings wave in level.waves)
+        foreach (EnemyData data in level.Enemies())
         {
-            foreach (EnemySpawnGroup group in wave.spawnGroups)
+            if (!registeredEnemies.Add(data)) continue;
+            if (data.prefab == null || data.prefab.GetComponent<EnemyHealth>() == null ||
+                data.prefab.GetComponent<Rigidbody2D>() == null)
             {
-                EnemyData data = group.enemy;
-
-                // Một loại xuất hiện nhiều wave vẫn chỉ tạo pool một lần.
-                if (!registeredEnemies.Add(data))
-                    continue;
-
-                if (data.prefab == null ||
-                    data.prefab.GetComponent<EnemyHealth>() == null ||
-                    data.prefab.GetComponent<Rigidbody2D>() == null)
-                {
-                    Debug.LogError(
-                        $"EnemyData {data.name}: prefab thiếu " +
-                        "EnemyHealth hoặc Rigidbody2D.",
-                        data
-                    );
-
-                    return false;
-                }
-
-                Prewarm<EnemyChase>(
-                    data, data.prefab, data.prewarmCount
-                );
-
-                if (!pools.ContainsKey(data))
-                    return false;
+                Debug.LogError($"EnemyData {data.name}: prefab thiếu EnemyHealth hoặc Rigidbody2D.", data);
+                return false;
             }
+            // Reserve one additional instance if this type is also the required boss.
+            int count = data.prewarmCount + (level.HasBoss && level.boss.enemy == data ? 1 : 0);
+            Prewarm<EnemyChase>(data, data.prefab, count);
+            if (!pools.ContainsKey(data)) return false;
         }
         goldLoot = gameData.goldLoot;
         energyLoot = gameData.energyLoot;
@@ -149,6 +92,22 @@ public sealed class CombatPoolManager : MonoBehaviour
         return true;
     }
 
+    public bool EnsureProjectilePool(ProjectileData data)
+    {
+        if (!IsInitialized || data == null) return false;
+        if (data.prefab == null || data.prefab.GetComponents<PooledProjectile>().Length != 1)
+        {
+            Debug.LogError($"{data.name}: prefab cần đúng một component projectile (LightningProjectile hoặc SpriteProjectile).", data);
+            return false;
+        }
+        Prewarm<PooledProjectile>(data, data.prefab, data.prewarmCount);
+        if (!pools.ContainsKey(data)) return false;
+        RegisterVfx(data.castVfx);
+        RegisterVfx(data.hitVfx);
+        return (data.castVfx == null || pools.ContainsKey(data.castVfx)) &&
+               (data.hitVfx == null || pools.ContainsKey(data.hitVfx));
+    }
+
     private void RegisterVfx(VfxData data)
     {
         if (data == null)
@@ -158,11 +117,15 @@ public sealed class CombatPoolManager : MonoBehaviour
             data, data.prefab, data.prewarmCount
         );
     }
+    public int AvailableEnemies(EnemyData data) =>
+        data != null && pools.TryGetValue(data, out var queue) ? queue.Count : 0;
+
     public bool TrySpawnEnemy(
     EnemyData data,
     Vector3 position,
-    PlayerHealth player)
+    PlayerHealth player, out EnemyHealth health)
     {
+        health = null;
         if (data == null ||
             player == null ||
             !player.gameObject.activeInHierarchy ||
@@ -184,7 +147,8 @@ public sealed class CombatPoolManager : MonoBehaviour
         EnemyChase enemy = item.GetComponent<EnemyChase>();
         enemy.PrepareSpawn(data, player, position);
 
-        item.GetComponent<EnemyHealth>().ConfigureDrops(this, data);
+        health = item.GetComponent<EnemyHealth>();
+        health.ConfigureDrops(this, data);
 
         item.gameObject.SetActive(true);
         return true;
@@ -271,8 +235,8 @@ public sealed class CombatPoolManager : MonoBehaviour
         if (item == null)
             return false;
 
-        LightningProjectile projectile =
-            item.GetComponent<LightningProjectile>();
+        PooledProjectile projectile =
+            item.GetComponent<PooledProjectile>();
 
         projectile.Launch(
             data, direction, damage, enemyLayer, this

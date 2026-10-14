@@ -1,40 +1,53 @@
 using UnityEngine;
 
+// Positions the spirit only; does not rotate its artwork or FirePoint.
+[DefaultExecutionOrder(-10)]
 public sealed class SpiritOrbit : MonoBehaviour
 {
-    [Header("Orbit")]
-    [SerializeField, Min(0f)] private float radius = 0.35f;
+    [SerializeField, Min(0f)] private float radius = .35f;
     [SerializeField] private float angularSpeed = 90f;
-    [SerializeField] private float startingAngle = 0f;
-
+    [SerializeField] private float startingAngle;
     private float angle;
-    private float localZ;
+    private Vector3 localCenter;
+    private Transform sharedCenter;
+    private Vector3 centerOffset;
+    private bool configured;
 
     private void Awake()
     {
+        if (configured) return;
         angle = startingAngle;
-        localZ = transform.localPosition.z;
+        localCenter = transform.localPosition;
         UpdatePosition();
     }
 
-    private void Update()
+    public void Configure(Transform center, Vector3 offset, float orbitRadius,
+        float speed, float phase)
     {
-        angle = Mathf.Repeat(
-            angle + angularSpeed * Time.deltaTime,
-            360f
-        );
+        sharedCenter = center;
+        centerOffset = offset;
+        radius = Mathf.Max(0, orbitRadius);
+        angularSpeed = speed;
+        angle = phase;
+        configured = true;
+        enabled = true;
+        UpdatePosition();
+    }
 
+    private void LateUpdate()
+    {
+        angle = Mathf.Repeat(angle + angularSpeed * Time.deltaTime, 360f);
         UpdatePosition();
     }
 
     private void UpdatePosition()
     {
         float radians = angle * Mathf.Deg2Rad;
-
-        transform.localPosition = new Vector3(
-            Mathf.Cos(radians) * radius,
-            Mathf.Sin(radians) * radius,
-            localZ
-        );
+        var offset = new Vector3(Mathf.Cos(radians) * radius,
+            Mathf.Sin(radians) * radius, 0);
+        if (configured && sharedCenter != null)
+            transform.position = sharedCenter.TransformPoint(centerOffset) + offset;
+        else if (!configured)
+            transform.localPosition = localCenter + offset;
     }
 }

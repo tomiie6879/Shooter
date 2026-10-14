@@ -1,0 +1,4 @@
+Generated 468 Tile assets; 4 palettes; 39 prop placements.
+Native Unity YAML generated from project templates.
+Unity batch compilation blocked by Windows Application Control (Bee.DotNet.dll).
+Unity import / Play Mode remains unverified.

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 public sealed class LevelLoader : MonoBehaviour
 {
@@ -11,7 +12,8 @@ public sealed class LevelLoader : MonoBehaviour
     [SerializeField] private PlayerHealth player;
     [SerializeField] private CombatPoolManager poolManager;
     [SerializeField] private EnemySpawner enemySpawner;
-    [SerializeField] private WaveManager waveManager;
+    [FormerlySerializedAs("waveManager")]
+    [SerializeField] private BattleManager battleManager;
 
     [Header("Optional UI")]
     [SerializeField] private Button nextLevelButton;
@@ -35,8 +37,8 @@ public sealed class LevelLoader : MonoBehaviour
             !poolManager.isActiveAndEnabled ||
             enemySpawner == null ||
             !enemySpawner.isActiveAndEnabled ||
-            waveManager == null ||
-            !waveManager.isActiveAndEnabled)
+            battleManager == null ||
+            !battleManager.isActiveAndEnabled)
         {
             Fail("LevelLoader thiếu data hoặc reference.");
             return;
@@ -83,7 +85,7 @@ public sealed class LevelLoader : MonoBehaviour
 
         if (!level.IsValid())
         {
-            Fail("LevelData chưa đủ Map, Spawn Point hoặc Wave.");
+            Fail("LevelData chưa đủ Map, Spawn Point hoặc lịch spawn.");
             return;
         }
 
@@ -109,6 +111,14 @@ public sealed class LevelLoader : MonoBehaviour
             return;
         }
 
+        var spirits = player.GetComponent<PlayerSpiritManager>();
+        if (spirits == null || !spirits.isActiveAndEnabled ||
+            !spirits.Initialize(gameData.spiritLoadout, poolManager))
+        {
+            Fail("Gán PlayerSpiritManager trên Player và Spirit Loadout trong GameData.");
+            return;
+        }
+
         enemySpawner.Initialize(
             poolManager,
             player,
@@ -121,9 +131,9 @@ public sealed class LevelLoader : MonoBehaviour
                 currentIndex + 1 < gameData.levels.Length;
         }
 
-        if (!waveManager.BeginLevel(level, gameData))
+        if (!battleManager.BeginLevel(level))
         {
-            Fail("Không bắt đầu được wave.");
+            Fail("Không bắt đầu được Battle.");
             return;
         }
 
@@ -132,7 +142,7 @@ public sealed class LevelLoader : MonoBehaviour
 
     public void NextLevel()
     {
-        if (!waveManager.HasWon)
+        if (!battleManager.HasWon)
             return;
 
         int nextIndex = currentIndex + 1;
